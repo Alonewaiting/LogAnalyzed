@@ -7,7 +7,11 @@
 #include "imgui_impl_dx11.h"
 #include <d3d11.h>
 #include <tchar.h>
-
+#include "StringProcess.h"
+#include "TextShow.h"
+#include "FileRead.h"
+#include "ControlMenu.h"
+#include <iostream>
 // Data
 static ID3D11Device* g_pd3dDevice = NULL;
 static ID3D11DeviceContext* g_pd3dDeviceContext = NULL;
@@ -24,6 +28,10 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 // Main code
 int main(int, char**)
 {
+    std::string path = "C:/Users/dwy/AppData/Local/JianyingPro/User Data/VELog/20221224-133013-955.log";
+    auto strPr = std::make_shared<FileReader>(path);
+  
+    auto file = strPr->readAll();
     // Create application window
     //ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, L"ImGui Example", NULL };
@@ -80,8 +88,16 @@ int main(int, char**)
 
     // Main loop
     bool done = false;
+    auto textShow1 = std::make_shared<TextShow>();
+    textShow1->setSizeRatio({1.0f,0.5f});
+    auto textShow2 = std::make_shared<TextShow>();
+    textShow2->setSizeRatio({ 1.0f,1.0f });
+    auto controlMenu = std::make_shared<ControlMenu>();
+    auto strProcess = std::make_shared<StringProcess>();
+    std::vector<LineInfo> filterResult;
     while (!done)
     {
+       
         // Poll and handle messages (inputs, window resize, etc.)
         // See the WndProc() function below for our to dispatch events to the Win32 backend.
         MSG msg;
@@ -108,34 +124,54 @@ int main(int, char**)
         {
             static float f = 0.0f;
             static int counter = 0;
+            const ImGuiViewport* viewport = ImGui::GetMainViewport();
+            ImGui::SetNextWindowPos(viewport->Pos);
+            ImGui::SetNextWindowSize(viewport->WorkSize);
 
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin("Text Show");                          // Create a window called "Hello, world!" and append into it.
+            controlMenu->show();
+            bool findConfirm = ImGui::Button("Find");
+            ImGui::SameLine(100);
+            bool clearResult = ImGui::Button("Clear");
+            ImGui::SameLine(200);
+            bool save = ImGui::Button("Save As Moudle");
+            if (clearResult) {
+                filterResult.clear();
+            }
+            if (findConfirm) {
+                do 
+                {
+                    auto filter = controlMenu->getFilterConditon();
+                    if (filter.empty()) {
+                        break;
+                    }
+                    filterResult.clear();
+                    filterResult.reserve(file.size() / 200);
+                    for (auto& val : file) {
+                        auto str = strProcess->processString(val.m_string, filter);
+                        if (!str.empty()) {
+                            filterResult.emplace_back(val);
+                        }
+                    }
+                } while (false);
+               
+            }
 
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
+            //ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+            //ImGui::Checkbox("Another Window", &show_another_window);
 
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            //ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+            //ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+            ImGui::PushID("##VerticalScrolling");
+            textShow1->showData(file);
+            ImGui::PopID();
+            ImGui::PushID("##VerticalScrolling2");
+            textShow2->showData(filterResult);
+            ImGui::PopID();
             ImGui::End();
         }
 
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
-        }
+  
 
         // Rendering
         ImGui::Render();

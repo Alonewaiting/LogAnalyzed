@@ -49,9 +49,7 @@ set(IMGUI_SRC_FILS
 	${IMAGUI_PATH}/imgui_internal.h
 	)
 endif()
-set(SRC_FILE
-	${SRC_PATH}/main.cpp)
-
+file(GLOB_RECURSE SRC_FILE ${SRC_PATH}/*.c ${SRC_PATH}/*.cc ${SRC_PATH}/*.h ${SRC_PATH}/*.cpp ${SRC_PATH}/*.hpp)
 
 function(assign_source_group)
     foreach(_source IN ITEMS ${ARGN})
