@@ -1,0 +1,6 @@
+[submodule "cJSON"]
+	path = cJSON
+	url = https://github.com/DaveGamble/cJSON.git
+[submodule "imgui"]
+	path = imgui
+	url = https://github.com/ocornut/imgui.git
