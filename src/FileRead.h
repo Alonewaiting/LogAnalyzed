@@ -14,6 +14,7 @@
 class FileReader {
 public:
     FileReader(const std::string& fileName);
+    FileReader();
     ~FileReader();
     LineInfo readOneLine();
     std::vector<LineInfo> readAll();

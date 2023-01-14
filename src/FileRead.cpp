@@ -10,6 +10,10 @@ FileReader::FileReader(const std::string& fileName)
     m_lineIndex = 0;
 }
 
+FileReader::FileReader()
+{
+}
+
 FileReader::~FileReader()
 {
     close();
@@ -85,8 +89,8 @@ bool FileReader::close()
 bool FileReader::open(const std::string& fileName)
 {
     if (m_file.is_open()) {
-        LOGE("file is open");
-        return false;
+        m_file.close();
+      
     }
     m_file.open(fileName, std::ios::in);
     return !m_file.fail();

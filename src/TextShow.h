@@ -20,7 +20,7 @@ public:
     void setSizeRatio(const ImVec2 &SizeRatio = {1.0f,1.0f});
 private:
     std::string m_winName;
-    int track_item = 100;
-    bool enable_track = true;
+    int track_item = 0;
+    bool enable_track = false;
     ImVec2 m_sizeRatio;
 };

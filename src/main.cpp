@@ -11,7 +11,9 @@
 #include "TextShow.h"
 #include "FileRead.h"
 #include "ControlMenu.h"
+#include "WindowsUtils.h"
 #include <iostream>
+#include "windows.h"
 // Data
 static ID3D11Device* g_pd3dDevice = NULL;
 static ID3D11DeviceContext* g_pd3dDeviceContext = NULL;
@@ -28,10 +30,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 // Main code
 int main(int, char**)
 {
-    std::string path = "C:/Users/dwy/AppData/Local/JianyingPro/User Data/VELog/20221224-133013-955.log";
-    auto strPr = std::make_shared<FileReader>(path);
-  
-    auto file = strPr->readAll();
+
     // Create application window
     //ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, L"ImGui Example", NULL };
@@ -94,6 +93,8 @@ int main(int, char**)
     textShow2->setSizeRatio({ 1.0f,1.0f });
     auto controlMenu = std::make_shared<ControlMenu>();
     auto strProcess = std::make_shared<StringProcess>();
+    auto fileReader = std::make_shared<FileReader>();
+    std::vector<LineInfo> file;
     std::vector<LineInfo> filterResult;
     while (!done)
     {
@@ -115,10 +116,10 @@ int main(int, char**)
         ImGui_ImplDX11_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
-
+        
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
+     /*   if (show_demo_window)
+            ImGui::ShowDemoWindow(&show_demo_window);*/
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         {
@@ -127,8 +128,34 @@ int main(int, char**)
             const ImGuiViewport* viewport = ImGui::GetMainViewport();
             ImGui::SetNextWindowPos(viewport->Pos);
             ImGui::SetNextWindowSize(viewport->WorkSize);
+            bool isOpen;
+            ImGui::Begin("Text Show", &isOpen, ImGuiWindowFlags_MenuBar);
+            if (ImGui::BeginMenuBar())
+            {
+                if (ImGui::BeginMenu("File"))
+                {
+                    if (ImGui::MenuItem("Open", "Ctrl+O")) {
 
-            ImGui::Begin("Text Show");                          // Create a window called "Hello, world!" and append into it.
+                        auto re = WindowsUtils::getFileName();
+                        if (!re.empty()) {
+                            fileReader->open(re);
+                            file = fileReader->readAll();
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Edit"))
+                {
+                    if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
+                    if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
+                    ImGui::Separator();
+                    if (ImGui::MenuItem("Cut", "CTRL+X")) {}
+                    if (ImGui::MenuItem("Copy", "CTRL+C")) {}
+                    if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenuBar();
+            }                        // Create a window called "Hello, world!" and append into it.
             controlMenu->show();
             bool findConfirm = ImGui::Button("Find");
             ImGui::SameLine(100);
