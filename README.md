@@ -3,3 +3,17 @@
 
 ## 使用方法
 ![image text](https://github.com/Alonewaiting/LogAnalyzed/blob/main/img/demo.jpg)
+
+1. "+" :表示添加一个过滤条件，前方的check 表示是否包含该字符串
+2. "-" :表示去除一个过滤条件，前方的check 表示是否包含该字符串
+这些过滤条件都是层层递进的，最终的结果是所有条件的总和
+
+3. find ： 计算满足条件的所有字符行
+4. clear： 清除已经计算的结果
+5. Save As Moudle： 把这次过滤的结果保存成一个model，下次直接使用（暂未实现）
+6. Track 被勾选表示不能滑动下方的textBox，line 表示可以直接定位到目标的行数。
+7. 第一个TextBox 显示的是文件内容，第二个是显示满足条件的内容。
+
+## TODO
+1. 保存到模板，读取模板。
+2. 支持分析日志目录
