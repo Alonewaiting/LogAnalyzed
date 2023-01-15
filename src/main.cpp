@@ -14,6 +14,7 @@
 #include "WindowsUtils.h"
 #include <iostream>
 #include "windows.h"
+#include "ModelManager.h"
 // Data
 static ID3D11Device* g_pd3dDevice = NULL;
 static ID3D11DeviceContext* g_pd3dDeviceContext = NULL;
@@ -30,6 +31,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 // Main code
 int main(int, char**)
 {
+   
 
     // Create application window
     //ImGui_ImplWin32_EnableDpiAwareness();
@@ -94,6 +96,7 @@ int main(int, char**)
     auto controlMenu = std::make_shared<ControlMenu>();
     auto strProcess = std::make_shared<StringProcess>();
     auto fileReader = std::make_shared<FileReader>();
+    auto filterModel = std::make_shared<ModelManager>();
     std::vector<LineInfo> file;
     std::vector<LineInfo> filterResult;
     while (!done)
@@ -161,7 +164,7 @@ int main(int, char**)
             ImGui::SameLine(100);
             bool clearResult = ImGui::Button("Clear");
             ImGui::SameLine(200);
-            bool save = ImGui::Button("Save As Moudle");
+           
             if (clearResult) {
                 filterResult.clear();
             }
@@ -183,7 +186,53 @@ int main(int, char**)
                 } while (false);
                
             }
-
+            static bool save = false;
+            if (!save) {
+                save = ImGui::Button("Save As Model");
+            }
+            else {
+                ImGui::Button("Save As Model");
+            }
+            if (save) {
+                ImGui::Begin("Save Model");
+                ImGui::SetWindowSize({400,100});
+                static char name[100] = "hello world";
+                ImGui::Text("Model Name"); ImGui::SameLine(100); ImGui::InputText("Input", name, IM_ARRAYSIZE(name));
+                bool confirmButton = ImGui::Button("Confirm");
+                if (confirmButton) {
+                    save = false;
+                    auto filter = controlMenu->getFilterConditon();
+                    if (!filter.empty()) {
+                        filterModel->insert(name, filter);
+                    }
+                }
+                ImGui::End();
+            }
+            auto modelMap = filterModel->getMoudel();
+            int modelSize = 10;
+            ImGui::Text("Model Area");
+            int i =1;
+            for (auto& model : modelMap) {
+                bool val = ImGui::Button(model.first.c_str());
+                i++;
+                if (! (i % modelSize == 0)) {
+                    ImGui::SameLine(100 * i);
+                }
+                else {
+                    i = 1;
+                }
+                if (val) {
+                    filterResult.clear();
+                    filterResult.reserve(file.size() / 200);
+                    for (auto& val : file) {
+                        auto str = strProcess->processString(val.m_string, model.second);
+                        if (!str.empty()) {
+                            filterResult.emplace_back(val);
+                        }
+                    }
+                }
+            }
+            ImGui::NewLine();
             //ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
             //ImGui::Checkbox("Another Window", &show_another_window);
 
